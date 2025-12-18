@@ -14,7 +14,7 @@ Vercel은 GitHub 저장소와 연동하여 코드를 푸시할 때마다 자동�
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin <당신의_GITHUB_저장소_URL>
+   git remote add origin https://github.com/simkoong/aion_book.git
    git push -u origin main
    ```
 
