@@ -1,0 +1,157 @@
+.container {
+    padding-bottom: var(--spacing-12);
+}
+
+.header {
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.backButton {
+    padding: var(--spacing-2);
+    margin-left: calc(var(--spacing-2) * -1);
+}
+
+.bookInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 var(--spacing-4) var(--spacing-6);
+    text-align: center;
+}
+
+.coverWrapper {
+    width: 140px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-4);
+    background-color: var(--color-surface-hover);
+}
+
+.cover {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+}
+
+.title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2);
+}
+
+.author {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-2);
+}
+
+.desc {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    max-width: 320px;
+}
+
+.content {
+    padding: var(--spacing-4);
+    min-height: 200px;
+}
+
+.tabContent {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.emptyState {
+    padding: var(--spacing-8);
+    text-align: center;
+    color: var(--color-text-muted);
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-4);
+}
+
+/* List Items (Discussions, Materials) */
+.tabList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.listItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.listIcon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-surface-hover);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.meta {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    display: block;
+    margin-top: 2px;
+}
+
+h4 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Review Card */
+.reviewCard {
+    background-color: var(--color-surface);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-2);
+}
+
+.reviewer {
+    font-weight: var(--font-weight-medium);
+}
+
+.stars {
+    color: var(--color-warning);
+}
+
+/* FAB */
+.fab {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-4));
+    right: var(--spacing-4);
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    transition: transform var(--transition-normal);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}

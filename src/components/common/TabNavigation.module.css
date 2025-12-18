@@ -1,0 +1,28 @@
+.container {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    position: sticky;
+    top: var(--header-height);
+    z-index: 40;
+}
+
+.tab {
+    flex: 1;
+    padding: var(--spacing-3) var(--spacing-2);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.tab:hover {
+    color: var(--color-text-main);
+}
+
+.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: var(--font-weight-bold);
+}

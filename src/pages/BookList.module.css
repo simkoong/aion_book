@@ -1,0 +1,86 @@
+.container {
+    padding: var(--spacing-4) 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.pageHeader {
+    padding: 0 var(--spacing-4);
+    margin-bottom: var(--spacing-6);
+}
+
+.pageTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-main);
+    margin-bottom: 4px;
+}
+
+.pageSubtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    padding: 0 var(--spacing-4);
+    position: relative;
+}
+
+/* Vertical line for timeline effect */
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 36px;
+    /* Adjust based on valid month label width */
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--color-border);
+    z-index: 0;
+}
+
+.monthSection {
+    display: flex;
+    gap: var(--spacing-4);
+    position: relative;
+    z-index: 1;
+}
+
+.monthLabel {
+    width: 50px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.monthNumber {
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--text-sm);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px var(--color-background);
+    /* Mask timeline line */
+}
+
+.bookGrid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+}
+
+/* Override BookCard width for grid */
+.bookGrid>div {
+    width: 100% !important;
+}
