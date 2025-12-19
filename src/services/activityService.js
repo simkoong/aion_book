@@ -56,3 +56,16 @@ export const fetchBookActivities = async (bookId, category) => {
     }
     return data;
 };
+
+export const deleteActivity = async (id, passwordHash) => {
+    const { count, error } = await supabase
+        .from('activities')
+        .delete({ count: 'exact' })
+        .eq('id', id)
+        .eq('password', passwordHash);
+
+    if (error) {
+        throw error;
+    }
+    return count > 0;
+};

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle, PenTool, Link as LinkIcon, Download } from 'lucide-react';
+import { ArrowLeft, MessageCircle, PenTool, Trash2 } from 'lucide-react';
 import styles from './BookDetail.module.css';
 import TabNavigation from '../components/common/TabNavigation';
 import { fetchBookById } from '../services/bookService';
-import { fetchBookActivities } from '../services/activityService';
+import { fetchBookActivities, deleteActivity } from '../services/activityService';
 import WriteActivityForm from '../components/features/WriteActivityForm';
+import PasswordPrompt from '../components/features/PasswordPrompt';
 
 const BookDetail = () => {
     const { id } = useParams();
@@ -15,8 +16,9 @@ const BookDetail = () => {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showWriteForm, setShowWriteForm] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
 
-    // Load book data
+    // Load Book
     useEffect(() => {
         const loadBook = async () => {
             try {
@@ -31,7 +33,7 @@ const BookDetail = () => {
         loadBook();
     }, [id]);
 
-    // Load activities when tab changes
+    // Load Activities
     useEffect(() => {
         const loadActivities = async () => {
             if (activeTab === 'discussion' || activeTab === 'review') {
@@ -47,12 +49,32 @@ const BookDetail = () => {
     }, [id, activeTab]);
 
     const handleWriteSuccess = () => {
-        // Refresh activities
         const loadActivities = async () => {
             const data = await fetchBookActivities(id, activeTab);
             setActivities(data);
         };
         loadActivities();
+    };
+
+    const handleDeleteClick = (activityId) => {
+        setDeleteTargetId(activityId);
+    };
+
+    const handleDeleteConfirm = async (passwordHash) => {
+        try {
+            const success = await deleteActivity(deleteTargetId, passwordHash);
+            if (success) {
+                alert('삭제되었습니다.');
+                const data = await fetchBookActivities(id, activeTab);
+                setActivities(data);
+                setDeleteTargetId(null);
+            } else {
+                alert('비밀번호가 일치하지 않습니다.');
+            }
+        } catch (err) {
+            console.error('Delete failed', err);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
     };
 
     if (loading) return <div className={styles.container}>로딩 중...</div>;
@@ -67,14 +89,12 @@ const BookDetail = () => {
 
     return (
         <div className={styles.container}>
-            {/* Header with Back Button */}
             <div className={styles.header}>
                 <button onClick={() => navigate(-1)} className={styles.backButton}>
                     <ArrowLeft size={24} />
                 </button>
             </div>
 
-            {/* Book Info Section */}
             <div className={styles.bookInfo}>
                 <div className={styles.coverWrapper}>
                     <img src={book.coverUrl || book.cover_url} alt={book.title} className={styles.cover} />
@@ -84,10 +104,8 @@ const BookDetail = () => {
                 <p className={styles.desc}>{book.description}</p>
             </div>
 
-            {/* Tabs */}
             <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-            {/* Content Area */}
             <div className={styles.content}>
                 {activeTab === 'info' && (
                     <div className={styles.tabContent}>
@@ -103,28 +121,38 @@ const BookDetail = () => {
                         ) : (
                             activities.map(item => (
                                 <div key={item.id} className={activeTab === 'review' ? styles.reviewCard : styles.listItem}>
-                                    {activeTab === 'discussion' ? (
-                                        <>
-                                            <div className={styles.listIcon}><MessageCircle size={20} /></div>
-                                            <div>
-                                                <h4>{item.title}</h4>
-                                                <span className={styles.meta}>{item.user_name} · {new Date(item.created_at).toLocaleDateString()}</span>
-                                                <p className={styles.itemContent}>{item.content}</p>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className={styles.reviewHeader}>
-                                                <span className={styles.reviewer}>{item.user_name}</span>
-                                                <span className={styles.date}>{new Date(item.created_at).toLocaleDateString()}</span>
-                                            </div>
-                                            <p>{item.content}</p>
-                                        </>
-                                    )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1 }}>
+                                            {activeTab === 'discussion' ? (
+                                                <>
+                                                    <div className={styles.listIcon}><MessageCircle size={20} /></div>
+                                                    <div>
+                                                        <h4>{item.title}</h4>
+                                                        <span className={styles.meta}>{item.user_name} · {new Date(item.created_at).toLocaleDateString()}</span>
+                                                        <p className={styles.itemContent}>{item.content}</p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className={styles.reviewHeader}>
+                                                        <span className={styles.reviewer}>{item.user_name}</span>
+                                                        <span className={styles.date}>{new Date(item.created_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p>{item.content}</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteClick(item.id); }}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#9ca3af', marginLeft: '8px' }}
+                                            aria-label="삭제"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         )}
-
                         <button className={styles.fab} onClick={() => setShowWriteForm(true)}>
                             <PenTool size={24} />
                         </button>
@@ -138,6 +166,13 @@ const BookDetail = () => {
                     book={book}
                     onClose={() => setShowWriteForm(false)}
                     onSuccess={handleWriteSuccess}
+                />
+            )}
+
+            {deleteTargetId && (
+                <PasswordPrompt
+                    onClose={() => setDeleteTargetId(null)}
+                    onConfirm={handleDeleteConfirm}
                 />
             )}
         </div>

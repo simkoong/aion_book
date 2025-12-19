@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
 import styles from './WriteActivityForm.module.css';
 import { createActivity } from '../../services/activityService';
+import { hashPassword } from '../../utils/crypto';
 
 const WriteActivityForm = ({ category, book, onClose, onSuccess }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!content || !userName) return;
-        if (category === 'discussion' && !title) return;
+        if (!content || !userName || !password) return;
+        if ((category === 'discussion' || category === 'notice') && !title) return;
+
+        // Notice author validation
+        if (category === 'notice') {
+            const allowedNames = ['AION', '오리', '유하'];
+            if (!allowedNames.includes(userName)) {
+                alert('공지사항은 관리자(AION, 오리, 유하)만 작성할 수 있습니다.');
+                return;
+            }
+        }
 
         setSubmitting(true);
         try {
+            const passwordHash = await hashPassword(password);
             await createActivity({
                 category,
-                title: category === 'discussion' ? title : `${book.title} 후기`,
+                title: (category === 'discussion' || category === 'notice') ? title : `${book?.title || '활동'} 후기`,
                 content,
                 user_name: userName,
-                book_title: book.title,
-                book_id: book.id  // sending book_id to link
+                password: passwordHash,
+                book_title: book?.title || null,
+                book_id: book?.id || null
             });
             onSuccess();
             onClose();
@@ -37,7 +50,7 @@ const WriteActivityForm = ({ category, book, onClose, onSuccess }) => {
         <div className={styles.overlay}>
             <div className={styles.modal}>
                 <h3 className={styles.title}>
-                    {category === 'discussion' ? '토론 발제하기' : '후기 남기기'}
+                    {category === 'discussion' ? '토론 발제하기' : category === 'notice' ? '공지사항 등록' : '후기 남기기'}
                 </h3>
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <div className={styles.field}>
@@ -46,19 +59,32 @@ const WriteActivityForm = ({ category, book, onClose, onSuccess }) => {
                             className={styles.input}
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
-                            placeholder="이름을 입력하세요"
+                            placeholder={category === 'notice' ? "관리자 이름 (AION, 오리, 유하)" : "이름을 입력하세요"}
                             required
                         />
                     </div>
 
-                    {category === 'discussion' && (
+                    <div className={styles.field}>
+                        <label className={styles.label}>비밀번호 (삭제 시 필요)</label>
+                        <input
+                            className={styles.input}
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="비밀번호 입력 (최대 20자)"
+                            maxLength={20}
+                            required
+                        />
+                    </div>
+
+                    {(category === 'discussion' || category === 'notice') && (
                         <div className={styles.field}>
                             <label className={styles.label}>제목</label>
                             <input
                                 className={styles.input}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                placeholder="토론 주제를 입력하세요"
+                                placeholder="제목을 입력하세요"
                                 required
                             />
                         </div>
@@ -70,7 +96,7 @@ const WriteActivityForm = ({ category, book, onClose, onSuccess }) => {
                             className={styles.textarea}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder={category === 'discussion' ? '토론하고 싶은 내용을 자유롭게 적어주세요.' : '책을 읽고 느낀 점을 기록해보세요.'}
+                            placeholder="내용을 입력하세요."
                             required
                         />
                     </div>

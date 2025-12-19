@@ -51,6 +51,7 @@
     color: var(--color-text-secondary);
     line-height: 1.5;
     max-width: 320px;
+    white-space: pre-wrap;
 }
 
 .content {
@@ -61,6 +62,7 @@
 .tabContent {
     color: var(--color-text-secondary);
     line-height: 1.6;
+    white-space: pre-wrap;
 }
 
 .emptyState {

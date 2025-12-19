@@ -4,7 +4,8 @@ export const fetchBooks = async (year) => {
     let query = supabase
         .from('books')
         .select('*')
-        .order('month', { ascending: true });
+        .order('month', { ascending: true })
+        .order('created_at', { ascending: true });
 
     if (year) {
         query = query.eq('year', year);
