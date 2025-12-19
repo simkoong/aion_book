@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PenTool, MessageSquare, FileText, Download } from 'lucide-react';
 import styles from './Activities.module.css';
 import TabNavigation from '../components/common/TabNavigation';
-import { NOTICES, ACTIVITIES } from '../data/mockData';
+import { fetchActivities } from '../services/activityService';
 
 const Activities = () => {
     const [activeTab, setActiveTab] = useState('all');
+    const [activities, setActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [expandedItems, setExpandedItems] = useState(new Set());
+
+    const toggleExpand = (id) => {
+        setExpandedItems(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    };
 
     const tabs = [
         { id: 'all', label: '전체' },
@@ -14,12 +30,22 @@ const Activities = () => {
         { id: 'review', label: '후기' },
     ];
 
-    // Simple filtering mock
-    const filteredItems = activeTab === 'all'
-        ? [...NOTICES, ...ACTIVITIES]
-        : activeTab === 'notice'
-            ? NOTICES
-            : ACTIVITIES.filter(a => a.action === activeTab || (activeTab === 'discussion' && a.action === 'question'));
+    useEffect(() => {
+        const loadActivities = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchActivities(activeTab);
+                setActivities(data);
+            } catch (err) {
+                console.error('Error fetching activities:', err);
+                setError('활동 내역을 불러오는데 실패했습니다.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadActivities();
+    }, [activeTab]);
 
     return (
         <div className={styles.container}>
@@ -29,33 +55,55 @@ const Activities = () => {
 
             <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div className={styles.list}>
-                {filteredItems.map((item, index) => (
-                    <div key={item.id || index} className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <span className={styles.tag}>
-                                {item.type === 'notice' || item.action === 'notice' ? '📢 공지' :
-                                    item.type === 'assignment' ? '📝 과제' :
-                                        item.action === 'question' ? '❓ 질문' :
-                                            item.action === 'review' ? '⭐ 후기' : '활동'}
-                            </span>
-                            <span className={styles.date}>{item.date || item.timestamp}</span>
-                        </div>
-                        <h3 className={styles.cardTitle}>{item.title || item.content}</h3>
-                        {item.bookTitle && <div className={styles.bookTag}>#{item.bookTitle}</div>}
+            {loading ? (
+                <div className={styles.loading}>로딩 중...</div>
+            ) : error ? (
+                <div className={styles.error}>{error}</div>
+            ) : (
+                <div className={styles.list}>
+                    {activities.length === 0 ? (
+                        <div className={styles.empty}>등록된 활동이 없습니다.</div>
+                    ) : (
+                        activities.map((item) => (
+                            <div key={item.id} className={styles.card}>
+                                <div className={styles.cardHeader}>
+                                    <span className={styles.tag}>
+                                        {item.category === 'notice' ? '📢 공지' :
+                                            item.category === 'assignment' ? '📝 과제' :
+                                                item.category === 'question' ? '❓ 질문' :
+                                                    item.category === 'review' ? '⭐ 후기' :
+                                                        item.category === 'discussion' ? '💬 토론' : '활동'}
+                                    </span>
+                                    {/* Format date if needed, or assume DB string is fine for now, or use date-fns */}
+                                    <span className={styles.date}>{new Date(item.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <h3 className={styles.cardTitle}>{item.title}</h3>
+                                {item.book_title && <div className={styles.bookTag}>#{item.book_title}</div>}
 
-                        {/* Additional info based on type */}
-                        {item.type === 'assignment' && (
-                            <div className={styles.dueDate}>마감: {item.dueDate}</div>
-                        )}
+                                {item.category === 'assignment' && item.due_date && (
+                                    <div className={styles.dueDate}>마감: {new Date(item.due_date).toLocaleDateString()}</div>
+                                )}
 
-                        <div className={styles.footer}>
-                            {item.user && <span className={styles.user}>by {item.user}</span>}
-                            <button className={styles.actionButton}>더보기</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                                {expandedItems.has(item.id) && (
+                                    <div className={styles.content}>
+                                        {item.content}
+                                    </div>
+                                )}
+
+                                <div className={styles.footer}>
+                                    {item.user_name && <span className={styles.user}>by {item.user_name}</span>}
+                                    <button
+                                        className={styles.actionButton}
+                                        onClick={() => toggleExpand(item.id)}
+                                    >
+                                        {expandedItems.has(item.id) ? '접기' : '더보기'}
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
 
             <button className={styles.fab}>
                 <PenTool size={24} />
